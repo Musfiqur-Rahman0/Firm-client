@@ -1,5 +1,7 @@
-import { useState, useContext, type FormEvent } from "react";
+import { useState, useContext, type FormEvent, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import type { AuthResponse } from "../types/auth";
@@ -15,74 +17,117 @@ export default function Register() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      setLoading(true);
-
       const res = await API.post<{ data: AuthResponse }>(
         "/auth/register",
-        form
+        form,
       );
 
-      
-      if (res.data.data?.token) {
-        login(res.data.data);
+      const authData = res.data.data;
+
+      if (authData?.token) {
+        login(authData);
+        toast.success("Account created successfully!");
         navigate("/");
       } else {
-        //  fallback (if no token returned)
-        alert("Registered successfully. Please login.");
-        navigate("/auth/login");
+        toast.success("Registered successfully. Please login.");
+        navigate("/login");
       }
-
     } catch (err: any) {
-      alert(err.response?.data?.message || "Registration failed");
+      const message = err.response?.data?.message || "Registration failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "auto" }}>
-      <h2>Register</h2>
+    <div className="auth-page">
+      <div className="auth-left">
+        <div className="auth-left-content">
+          <div style={{ fontSize: "2.5rem", marginBottom: 8 }}>🌱</div>
+          <h1 className="auth-brand">UrbanFarm</h1>
+          <p className="auth-tagline">Join thousands of urban farmers today.</p>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-          required
-        />
+      <div className="auth-right">
+        <div className="auth-form-wrap">
+          <h2 className="auth-title">Create account</h2>
+          <p className="auth-sub">Start your farming journey</p>
 
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Full Name</label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
+            <div className="form-group">
+              <label className="form-label">Email</label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && (
+              <div className="form-error" style={{ marginBottom: 14 }}>
+                ⚠ {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-primary btn-full"
+              disabled={loading}
+            >
+              {loading ? "Registering..." : "Create Account"}
+            </button>
+          </form>
+
+          <div className="auth-toggle">
+            Already have an account?{" "}
+            <span
+              onClick={() => navigate("/login")}
+              style={{ cursor: "pointer" }}
+            >
+              Sign in
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

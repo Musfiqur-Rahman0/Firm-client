@@ -1,40 +1,74 @@
 import { createBrowserRouter } from "react-router-dom";
-import { layout } from "../layout/layout";
+import { layout } from "../layout/Layout";
 import { AuthLayout } from "../layout/AuthLayout";
 
 import Register from "../pages/Register";
 import { Error } from "../pages/Error";
 import Login from "../pages/Login";
+import Dashboard from "../pages/Dashboard";
+import FarmRental from "../pages/FarmRental";
+import Marketplace from "../pages/Marketplace";
+import PlantTracking from "../pages/PlantTracking";
+import CommunityForum from "../pages/ComunityForum";
+import Orders from "../pages/Orders";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: layout,
+    children: [
+      {
+        path: "/home",
+        Component: () => <h1>Home</h1>,
+      },
+      {
+        path: "/dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "/firm-rentals",
+        element: <FarmRental />,
+      },
+      {
+        path: "/marketplace",
+        element: <Marketplace />,
+      },
 
-    {
-        path : "/",
-        Component :  layout,
-        children : [
-            {
-                path : "/home",
-                Component : () => <h1>Home</h1>
-            }
-        ],
-    }, 
-    {
-        path : "/auth", 
-        Component : AuthLayout,
-        children : [
-            {
-                path : "login",
-                Component : Login
-            },
-            {
-                path : "register",
-                Component : Register
-            }
-        ]
-    }, 
-    {
+      {
+        path: "/plant-tracking",
+        element: <PlantTracking />,
+      },
+      {
+        path: "/forum",
+        element: <CommunityForum />,
+      },
+      {
+        path: "/orders",
+        element: <Orders />,
+      },
+    ],
+  },
+  {
+    path: "/auth",
+    Component: AuthLayout,
+    children: [
+      {
+        path: "login",
+        Component: Login,
+      },
+      {
+        path: "register",
+        Component: Register,
+      },
+    ],
+  },
+  {
     path: "*",
     element: <Error />,
+  },
+  {
+    path: "/test",
+    element: <h2>Test Page</h2>,
   },
 ]);
 
