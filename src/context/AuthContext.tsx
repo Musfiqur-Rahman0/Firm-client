@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { createContext, useState, useEffect, type ReactNode } from "react";
 import API from "../api/axios";
 import type { AuthResponse, User } from "../types/auth";
 
@@ -15,7 +10,7 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType>(
-  {} as AuthContextType
+  {} as AuthContextType,
 );
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
