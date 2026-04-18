@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 function App() {
   return (
     <AuthProvider>
-      {/* <Toaster position="top-right"    richColors theme="light" /> */}
+      <Toaster position="top-right" richColors theme="light" />
       <RouterProvider router={router} />
     </AuthProvider>
   );
