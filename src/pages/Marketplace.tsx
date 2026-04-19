@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthContext } from "../context/AuthContext";
 import { demoProducts } from "../../public/demoData/data";
+import { marketApi } from "../api/services/apis";
 
 const CATEGORIES = [
   "All",
@@ -282,51 +283,26 @@ export default function Marketplace() {
   const limit = 9;
 
   const load = async () => {
-    // setLoading(true);
-    // try {
-    //   const params = new URLSearchParams({
-    //     page: String(page),
-    //     limit: String(limit),
-    //   });
-    //   if (search) params.set("name", search);
-    //   if (category !== "All") params.set("category", category);
-    //   const data = await marketApi.list(params.toString());
-    //   setProducts(data?.data || data?.products || data || []);
-    //   setTotal(data?.total || 0);
-    // } catch {
-    //   toast("Failed to load products");
-    // } finally {
-    //   setLoading(false);
-    // }
-
     setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search) params.set("name", search);
+      if (category !== "All") params.set("category", category);
 
-    setTimeout(() => {
-      let filtered = [...demoProducts];
+      const data = await marketApi.list(params.toString());
+      // console.log("Loaded data:", data);
+      setProducts(data?.data || data?.products || data || []);
 
-      // search filter
-      if (search) {
-        filtered = filtered.filter((p) =>
-          p.name.toLowerCase().includes(search.toLowerCase()),
-        );
-      }
-
-      // category filter
-      if (category !== "All") {
-        filtered = filtered.filter(
-          (p) => p.category.toLowerCase() === category.toLowerCase(),
-        );
-      }
-
-      // pagination
-      const start = (page - 1) * limit;
-      const paginated = filtered.slice(start, start + limit);
-
-      setProducts(paginated);
-      setTotal(filtered.length);
-
+      setTotal(data?.total || 0);
+    } catch {
+      toast("Failed to load products");
+    } finally {
       setLoading(false);
-    }, 500); // simulate API delay
+      console.log("Products loaded:", products);
+    }
   };
 
   useEffect(() => {

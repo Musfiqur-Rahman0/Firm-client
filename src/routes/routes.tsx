@@ -11,12 +11,17 @@ import Marketplace from "../pages/Marketplace";
 import PlantTracking from "../pages/PlantTracking";
 import CommunityForum from "../pages/ComunityForum";
 import Orders from "../pages/Orders";
+import LandingPage from "../pages/LandingPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: layout,
     children: [
+      {
+        index: true,
+        Component: LandingPage,
+      },
       {
         path: "/home",
         Component: () => <h1>Home</h1>,

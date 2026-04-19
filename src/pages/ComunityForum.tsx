@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { AuthContext } from "../context/AuthContext";
 import { demoPosts } from "../../public/demoData/data";
+import { communityApi } from "../api/services/apis";
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime();
@@ -52,7 +53,9 @@ export default function CommunityForum() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [tags, setTags] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
@@ -61,22 +64,23 @@ export default function CommunityForum() {
 
   const load = async () => {
     setLoading(true);
+    // setTimeout(() => {
+    //   const start = (page - 1) * 10;
+    //   const paginated = demoPosts.slice(start, start + 10);
 
-    setTimeout(() => {
-      const start = (page - 1) * 10;
-      const paginated = demoPosts.slice(start, start + 10);
-
-      setPosts(paginated);
-      setTotal(demoPosts.length);
+    //   setPosts(paginated);
+    //   setTotal(demoPosts.length);
+    //   setLoading(false);
+    // }, 500);
+    try {
+      const data = await communityApi.posts(page);
+      setPosts(data?.data || data?.posts || data || []);
+      setTotal(data?.total || 0);
+    } catch {
+      toast.error("Failed to load posts");
+    } finally {
       setLoading(false);
-    }, 500);
-    // setLoading(true);
-    // try {
-    //   const data = await communityApi.posts(page);
-    //   setPosts(data?.data || data?.posts || data || []);
-    //   setTotal(data?.total || 0);
-    // } catch { showToast('Failed to load posts', 'error'); }
-    // finally { setLoading(false); }
+    }
   };
 
   useEffect(() => {
@@ -85,55 +89,48 @@ export default function CommunityForum() {
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!title.trim() || !content.trim()) {
+      toast.error("Please enter both title and content");
+      return;
+    }
 
     setPosting(true);
+    try {
+      const tagsArray = tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag);
 
-    setTimeout(() => {
-      const newPost = {
-        id: Date.now().toString(),
+      await communityApi.createPost({
+        title: title.trim(),
         postContent: content.trim(),
-        createdAt: new Date().toISOString(),
-        userId: {
-          id: user?.id || "me",
-          name: user?.name || "You",
-          role: user?.role || "Member",
-        },
-      };
+        tags: tagsArray,
+      });
 
-      setPosts((prev) => [newPost, ...prev]);
+      setTitle("");
       setContent("");
-      toast.success("Post shared! 🌿");
-
+      setTags("");
+      toast.success("Post shared with the community! 🌿");
+      setPage(1);
+      load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to post");
+    } finally {
       setPosting(false);
-    }, 600);
-    // e.preventDefault();
-    // if (!content.trim()) return;
-    // setPosting(true);
-    // try {
-    //   await communityApi.createPost({ postContent: content.trim() });
-    //   setContent('');
-    //   showToast('Post shared with the community! 🌿', 'success');
-    //   setPage(1);
-    //   load();
-    // } catch (err: any) {
-    //   showToast(err.message || 'Failed to post', 'error');
-    // } finally { setPosting(false); }
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this post?")) return;
 
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    toast.message("Post deleted");
-    // if (!confirm("Delete this post?")) return;
-    // try {
-    //   await communityApi.deletePost(id);
-    //   showToast("Post deleted", "info");
-    //   load();
-    // } catch {
-    //   showToast("Delete failed", "error");
-    // }
+    if (!confirm("Delete this post?")) return;
+    try {
+      await communityApi.deletePost(id);
+      toast.success("Post deleted");
+      load();
+    } catch {
+      toast.error("Delete failed");
+    }
   };
 
   const filtered = search
@@ -174,6 +171,20 @@ export default function CommunityForum() {
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <Avatar name={user?.name || "User"} />
               <form onSubmit={handlePost} style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="Post title..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  style={{
+                    width: "100%",
+                    marginBottom: 10,
+                    fontSize: 14,
+                    padding: "8px 12px",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                  }}
+                />
                 <textarea
                   ref={textareaRef}
                   rows={3}
@@ -185,6 +196,20 @@ export default function CommunityForum() {
                     const t = e.currentTarget;
                     t.style.height = "auto";
                     t.style.height = t.scrollHeight + "px";
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Tags (comma-separated: organic, composting, etc.)"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  style={{
+                    width: "100%",
+                    marginBottom: 10,
+                    fontSize: 14,
+                    padding: "8px 12px",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
                   }}
                 />
                 <div
@@ -202,7 +227,7 @@ export default function CommunityForum() {
                   <button
                     type="submit"
                     className="btn btn-primary btn-sm"
-                    disabled={posting || !content.trim()}
+                    disabled={posting || !title.trim() || !content.trim()}
                   >
                     {posting ? "Posting..." : "Share Post"}
                   </button>
