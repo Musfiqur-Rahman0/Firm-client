@@ -46,33 +46,22 @@ export const marketApi = {
     API.post(`/produce`, body).then(handleResponse).catch(handleError),
 };
 
-// // Plant Tracking
-// export const plantApi = {
-//   list: () =>
-//     API.get(`/plants`)
-//       .then(handleResponse)
-//       .catch(handleError),
+// Plant Tracking
+export const plantApi = {
+  list: () => API.get(`/plants`).then(handleResponse).catch(handleError),
 
-//   get: (id: string) =>
-//     API.get(`/plants/${id}`)
-//       .then(handleResponse)
-//       .catch(handleError),
+  get: (id: string) =>
+    API.get(`/plants/${id}`).then(handleResponse).catch(handleError),
 
-//   create: (body: any) =>
-//     API.post(`/plants`, body)
-//       .then(handleResponse)
-//       .catch(handleError),
+  create: (body: any) =>
+    API.post(`/plants`, body).then(handleResponse).catch(handleError),
 
-//   update: (id: string, body: any) =>
-//     API.patch(`/plants/${id}`, body)
-//       .then(handleResponse)
-//       .catch(handleError),
+  update: (id: string, body: any) =>
+    API.patch(`/plants/${id}`, body).then(handleResponse).catch(handleError),
 
-//   delete: (id: string) =>
-//     API.delete(`/plants/${id}`)
-//       .then(handleResponse)
-//       .catch(handleError),
-// };
+  delete: (id: string) =>
+    API.delete(`/plants/${id}`).then(handleResponse).catch(handleError),
+};
 
 // // Community
 export const communityApi = {

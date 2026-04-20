@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 // import { plantApi } from '../services/api';
 import { toast } from "sonner";
 import { demoPlants } from "../../public/demoData/data";
+import { plantApi } from "../api/services/apis";
 
-const STAGES = ["Seed", "Sprout", "Vegetative", "Flowering", "Harvest"];
+const STAGES = ["SEEDLING", "GROWING", "VEGETATIVE", "FLOWERING", "HARVEST"];
 const PLANT_EMOJIS: Record<string, string> = {
   tomato: "🍅",
   spinach: "🥬",
@@ -16,9 +17,11 @@ const PLANT_EMOJIS: Record<string, string> = {
 };
 
 function getPlantEmoji(name: string) {
-  const lower = name.toLowerCase();
-  for (const [key, val] of Object.entries(PLANT_EMOJIS)) {
-    if (lower.includes(key)) return val;
+  if (name) {
+    const lower = name.toLowerCase();
+    for (const [key, val] of Object.entries(PLANT_EMOJIS)) {
+      if (lower.includes(key)) return val;
+    }
   }
   return PLANT_EMOJIS.default;
 }
@@ -172,27 +175,31 @@ function AddPlantModal({ onClose, onSuccess }: any) {
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    setTimeout(() => {
-      toast.success("Plant added 🌱");
-      onSuccess();
-      onClose();
-      setLoading(false);
-    }, 700);
     // e.preventDefault();
     // setLoading(true);
-    // try {
-    //   await plantApi.create({ ...form, health: 100, stage: "Seed" });
-    //   showToast("Plant added to tracker! 🌱", "success");
+
+    // setTimeout(() => {
+    //   toast.success("Plant added 🌱");
     //   onSuccess();
     //   onClose();
-    // } catch (err: any) {
-    //   showToast(err.message || "Failed to add plant", "error");
-    // } finally {
     //   setLoading(false);
-    // }
+    // }, 700);
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await plantApi.create({
+        ...form,
+        healthStatus: "GOOD",
+        currentStage: "SEEDLING",
+      });
+      toast.success("Plant added to tracker! 🌱");
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add plant");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -275,17 +282,16 @@ export default function PlantTracking() {
 
   const load = async () => {
     setLoading(true);
+    try {
+      const data = await plantApi.list();
+      setPlants(data?.data || data?.plants || data || []);
 
-    setTimeout(() => {
-      setPlants(demoPlants);
+      console.log("Loaded plants:", data);
+    } catch {
+      toast.success("Failed to load plants");
+    } finally {
       setLoading(false);
-    }, 500);
-    // setLoading(true);
-    // try {
-    //   const data = await plantApi.list();
-    //   setPlants(data?.data || data?.plants || data || []);
-    // } catch { showToast('Failed to load plants', 'error'); }
-    // finally { setLoading(false); }
+    }
   };
 
   const deletePlant = async (id: string, name: string) => {
@@ -304,6 +310,19 @@ export default function PlantTracking() {
     //   showToast("Delete failed", "error");
     // }
   };
+
+  const avgHealth = Math.round(
+    plants.reduce((total, plant) => {
+      const health =
+        plant.healthStatus === "GOOD"
+          ? 80
+          : plant.healthStatus === "AVERAGE"
+            ? 50
+            : 20;
+
+      return total + health;
+    }, 0) / plants.length,
+  );
 
   useEffect(() => {
     load();
@@ -342,23 +361,18 @@ export default function PlantTracking() {
           </div>
           <div className="stat-card forest">
             <div className="stat-label">Avg Health</div>
-            <div className="stat-value">
-              {Math.round(
-                plants.reduce((a, p) => a + (p.health || 0), 0) / plants.length,
-              )}
-              %
-            </div>
+            <div className="stat-value">{avgHealth}%</div>
           </div>
           <div className="stat-card earth">
             <div className="stat-label">Ready to Harvest</div>
             <div className="stat-value">
-              {plants.filter((p) => p.stage === "Harvest").length}
+              {plants.filter((p) => p.currentStage === "HARVEST").length}
             </div>
           </div>
           <div className="stat-card terra">
             <div className="stat-label">Need Attention</div>
             <div className="stat-value">
-              {plants.filter((p) => (p.health || 100) < 40).length}
+              {plants.filter((p) => p.healthStatus === "POOR").length}
             </div>
           </div>
         </div>
@@ -384,8 +398,13 @@ export default function PlantTracking() {
       ) : (
         <div className="grid-3">
           {plants.map((plant, i) => {
-            const health = plant.health ?? 80;
-            const stage = plant.stage || "Vegetative";
+            const health =
+              plant.healthStatus === "GOOD"
+                ? 80
+                : plant.healthStatus === "AVERAGE"
+                  ? 50
+                  : 20;
+            const stage = plant.currentStage || "Vegetative";
             const si = stageIndex(stage);
             return (
               <div className="plant-card" key={plant.id || i}>
@@ -408,7 +427,7 @@ export default function PlantTracking() {
                         {plant.name}
                       </div>
                       <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                        {plant.species || "Unknown species"}
+                        {plant.plantName || "Unknown species"}
                       </div>
                     </div>
                   </div>
