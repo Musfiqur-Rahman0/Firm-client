@@ -16,6 +16,9 @@ import { RentalPlaces } from "../pages/RentalPlaces";
 import CreateVendorProfile from "../pages/CreateVendorProfile";
 import ProducePage from "../pages/ProducePage/Produce";
 
+import { AdminDashboard } from "../pages/ProducePage/Dashboard/AdminDashboard";
+import PrivateRoute from "./PrivetRoute";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -81,6 +84,14 @@ const router = createBrowserRouter([
         Component: Register,
       },
     ],
+  },
+  {
+    path: "/dashboard/admin",
+    element: (
+      <PrivateRoute requiredRole={["ADMIN"]}>
+        <AdminDashboard />
+      </PrivateRoute>
+    ),
   },
   {
     path: "*",
