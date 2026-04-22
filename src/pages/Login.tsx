@@ -20,8 +20,7 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const handleChange =
-    (key: "email" | "password") =>
-    (e: ChangeEvent<HTMLInputElement>) => {
+    (key: "email" | "password") => (e: ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
     };
 
@@ -36,7 +35,6 @@ export default function Login() {
       login(res.data);
       toast.success("Welcome back!");
       navigate("/");
-
     } catch (err: any) {
       const message = err.response?.data?.message || "Login failed";
       setError(message);
@@ -103,7 +101,7 @@ export default function Login() {
           <div className="auth-toggle">
             Don’t have an account?{" "}
             <span
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/auth/register")}
               style={{ cursor: "pointer" }}
             >
               Register here

@@ -17,14 +17,22 @@ export const Navbar = () => {
           <Link to="/marketplace" prefetch="intent" className="nav-link">
             Marketplace
           </Link>
+          <Link to="/rental-places" prefetch="intent" className="nav-link">
+            Rental Spaces
+          </Link>
           <Link to="/plant-tracking" prefetch="intent" className="nav-link">
             Tracking
           </Link>
           <Link to="/forum" prefetch="intent" className="nav-link">
             Community
           </Link>
+          <Link to="/produce" prefetch="intent" className="nav-link">
+            Produce
+          </Link>
         </div>
-        <button className="btn btn-primary">Start Growing</button>
+        <Link to={"/become-vendor"} className="btn btn-primary">
+          Become a Vendor
+        </Link>
       </div>
     </nav>
   );

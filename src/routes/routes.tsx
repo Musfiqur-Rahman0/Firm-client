@@ -12,6 +12,9 @@ import PlantTracking from "../pages/PlantTracking";
 import CommunityForum from "../pages/ComunityForum";
 import Orders from "../pages/Orders";
 import LandingPage from "../pages/LandingPage";
+import { RentalPlaces } from "../pages/RentalPlaces";
+import CreateVendorProfile from "../pages/CreateVendorProfile";
+import ProducePage from "../pages/ProducePage/Produce";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +53,18 @@ const router = createBrowserRouter([
       {
         path: "/orders",
         element: <Orders />,
+      },
+      {
+        path: "/rental-places",
+        element: <RentalPlaces />,
+      },
+      {
+        path: "/become-vendor",
+        element: <CreateVendorProfile />,
+      },
+      {
+        path: "/produce",
+        element: <ProducePage />,
       },
     ],
   },

@@ -77,6 +77,25 @@ export const communityApi = {
     API.delete(`/forum/posts/${id}`).then(handleResponse).catch(handleError),
 };
 
+export const vendorApi = {
+  createProfile: (body: {
+    farmName: string;
+    farmLocation: string;
+    farmDescription: string;
+  }) => API.post(`/vendors`, body).then(handleResponse).catch(handleError),
+
+  profiles: () => API.get(`/vendors`).then(handleResponse).catch(handleError),
+
+  getProfile: (id: string) =>
+    API.get(`/vendors/${id}`).then(handleResponse).catch(handleError),
+
+  deleteProfile: (id: string) =>
+    API.delete(`/vendors/${id}`).then(handleResponse).catch(handleError),
+
+  updateProfile: (id: string, body: any) =>
+    API.patch(`/vendors/${id}`, body).then(handleResponse).catch(handleError),
+};
+
 // // Dashboard
 // export const dashboardApi = {
 //   stats: () =>
