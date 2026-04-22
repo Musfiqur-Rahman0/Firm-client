@@ -31,28 +31,35 @@ export const ProducePage: React.FC = () => {
   } = useProduce();
 
   const categoryRef = React.useRef<HTMLDivElement>(null);
+  const sortRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        categoryRef.current &&
-        !categoryRef.current.contains(event.target as Node)
-      ) {
-        // Handle click outside logic here
-        console.log("Clicked outside of category dropdown");
-
-        categoryRef.current?.classList.add("close");
+  const handleClickOutside = (ref: React.RefObject<HTMLDivElement>) => {
+    return (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        console.log("Clicked outside");
+        ref.current.classList.add("close");
       } else {
         setTimeout(() => {
-          console.log("Clicked  inside of category dropdown");
-          categoryRef.current?.classList.add("close");
+          console.log("Clicked inside");
+          ref.current?.classList.add("close");
         }, 250);
       }
     };
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
+  const handleDropdownOpen = (ref: React.RefObject<HTMLDivElement>) => {
+    ref.current?.classList.remove("close");
+  };
+
+  useEffect(() => {
+    const Categorylistner = handleClickOutside(categoryRef);
+    const Sortlistner = handleClickOutside(sortRef);
+    document.addEventListener("mousedown", Categorylistner);
+    document.addEventListener("mousedown", Sortlistner);
+
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", Categorylistner);
+      document.removeEventListener("mousedown", Sortlistner);
     };
   }, []);
 
@@ -113,9 +120,7 @@ export const ProducePage: React.FC = () => {
         <div className="dropdown">
           <button
             className="dropdown-btn"
-            onClick={() => {
-              categoryRef.current?.classList.remove("close");
-            }}
+            onClick={() => handleDropdownOpen(categoryRef)}
           >
             {filters.category || "Category"}
             <span>▾</span>
@@ -161,12 +166,15 @@ export const ProducePage: React.FC = () => {
 
         {/* Sort → modern dropdown */}
         <div className="dropdown">
-          <button className="dropdown-btn">
+          <button
+            className="dropdown-btn"
+            onClick={() => handleDropdownOpen(sortRef)}
+          >
             Sort: {filters.sort}
             <span>▾</span>
           </button>
 
-          <div className="dropdown-menu">
+          <div className="dropdown-menu close" ref={sortRef}>
             <div onClick={() => setFilterField("sort", "newest")}>Newest</div>
             <div onClick={() => setFilterField("sort", "name-asc")}>A → Z</div>
             <div onClick={() => setFilterField("sort", "name-desc")}>Z → A</div>
